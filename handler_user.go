@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/farouq-gfishi/rssagg/internal/auth"
 	"github.com/farouq-gfishi/rssagg/internal/database"
 	"github.com/google/uuid"
 )
@@ -28,6 +29,20 @@ func (apiCfg *apiConfig) handlerCreateUser(w http.ResponseWriter, r *http.Reques
 	})
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, err.Error())
+	}
+	responseWithJSON(w, 201, databaseUserToUser(user))
+}
+
+func (apiCfg *apiConfig) handlerGetUser(w http.ResponseWriter, r *http.Request) {
+	apiKey, err := auth.GetApiKey(r.Header)
+	if err != nil {
+		respondWithError(w, http.StatusUnauthorized, err.Error())
+		return
+	}
+	user, err := apiCfg.DB.GetUserByApikey(r.Context(), apiKey)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, err.Error())
+		return
 	}
 	responseWithJSON(w, 200, databaseUserToUser(user))
 }
