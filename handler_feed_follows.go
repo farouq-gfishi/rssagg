@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/farouq-gfishi/rssagg/internal/database"
+	"github.com/go-chi/chi"
 	"github.com/google/uuid"
 )
 
@@ -31,5 +32,30 @@ func (apiCfg *apiConfig) handlerCreateFeedFollow(w http.ResponseWriter, r *http.
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, err.Error())
 	}
-	responseWithJSON(w, 201, databaseFeedFollowsToFeedFollows(feedFollow))
+	responseWithJSON(w, 201, databaseFeedFollowToFeedFollow(feedFollow))
+}
+
+func (apiCfg *apiConfig) handlerGetFeedFollows(w http.ResponseWriter, r *http.Request, user database.User) {
+	feedFollows, err := apiCfg.DB.GetFeedFollows(r.Context(), user.ID)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, err.Error())
+	}
+	responseWithJSON(w, 200, databaseFeedFollowsToFeedFollows(feedFollows))
+}
+
+func (apiCfg *apiConfig) handlerDeleteFeedFollows(w http.ResponseWriter, r *http.Request, user database.User) {
+	feedFollowIDStr := chi.URLParam(r, "feedFollowID")
+	feedFollowID, err := uuid.Parse(feedFollowIDStr)
+	if err != nil {
+		respondWithError(w, http.StatusBadRequest, "Invalid request payload")
+	}
+
+	err = apiCfg.DB.DeleteFeedFollows(r.Context(), database.DeleteFeedFollowsParams{
+		ID:     feedFollowID,
+		UserID: user.ID,
+	})
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, err.Error())
+	}
+	responseWithJSON(w, 200, struct{}{})
 }

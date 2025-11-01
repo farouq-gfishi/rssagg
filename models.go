@@ -61,7 +61,7 @@ func databaseFeedsToFeeds(dbFeeds []database.Feed) []Feed {
 	return feeds
 }
 
-func databaseFeedFollowsToFeedFollows(dbFeedFollows database.FeedFollow) FeedFollows {
+func databaseFeedFollowToFeedFollow(dbFeedFollows database.FeedFollow) FeedFollows {
 	return FeedFollows{
 		ID:        dbFeedFollows.ID,
 		CreatedAt: dbFeedFollows.CreatedAt,
@@ -69,4 +69,12 @@ func databaseFeedFollowsToFeedFollows(dbFeedFollows database.FeedFollow) FeedFol
 		UserID:    dbFeedFollows.UserID,
 		FeedID:    dbFeedFollows.UserID,
 	}
+}
+
+func databaseFeedFollowsToFeedFollows(dbFeedFollows []database.FeedFollow) []FeedFollows {
+	var feedFollows []FeedFollows
+	for _, dbFeedFollow := range dbFeedFollows {
+		feedFollows = append(feedFollows, databaseFeedFollowToFeedFollow(dbFeedFollow))
+	}
+	return feedFollows
 }
