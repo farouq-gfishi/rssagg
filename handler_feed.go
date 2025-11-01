@@ -9,9 +9,10 @@ import (
 	"github.com/google/uuid"
 )
 
-func (apiCfg *apiConfig) handlerCreateUser(w http.ResponseWriter, r *http.Request) {
+func (apiCfg *apiConfig) handlerCreateFeed(w http.ResponseWriter, r *http.Request, user database.User) {
 	type parameters struct {
 		Name string `json:"name"`
+		Url  string `json:"url"`
 	}
 	decoder := json.NewDecoder(r.Body)
 	params := parameters{}
@@ -20,18 +21,16 @@ func (apiCfg *apiConfig) handlerCreateUser(w http.ResponseWriter, r *http.Reques
 		respondWithError(w, http.StatusBadRequest, "Invalid request payload")
 		return
 	}
-	user, err := apiCfg.DB.CreateUser(r.Context(), database.CreateUserParams{
+	feed, err := apiCfg.DB.CreateFeed(r.Context(), database.CreateFeedParams{
 		ID:        uuid.New(),
 		Name:      params.Name,
 		CreatedAt: time.Now().UTC(),
 		UpdatedAt: time.Now().UTC(),
+		Url:       params.Url,
+		UserID:    user.ID,
 	})
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, err.Error())
 	}
-	responseWithJSON(w, 201, databaseUserToUser(user))
-}
-
-func (apiCfg *apiConfig) handlerGetUser(w http.ResponseWriter, r *http.Request, user database.User) {
-	responseWithJSON(w, 200, databaseUserToUser(user))
+	responseWithJSON(w, 201, databaseFeedToFeed(feed))
 }
